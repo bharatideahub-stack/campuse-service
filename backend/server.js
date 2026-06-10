@@ -21,6 +21,7 @@ const walletRoutes = require('./src/routes/wallet');
 const messageRoutes = require('./src/routes/messages');
 const adminRoutes = require('./src/routes/admin');
 const serviceRoutes = require('./src/routes/services');
+const notificationRoutes = require('./src/routes/notifications');
 
 const app = express();
 const server = http.createServer(app);
@@ -75,6 +76,7 @@ app.use('/api/wallet', walletRoutes);
 app.use('/api/messages', messageRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/services', serviceRoutes);
+app.use('/api/notifications', notificationRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {

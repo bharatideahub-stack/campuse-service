@@ -3,6 +3,7 @@ const Bid = require('../models/Bid');
 const User = require('../models/User');
 const { sendPushNotification } = require('../services/notificationService');
 const { findNearbyProviders } = require('../services/matchingService');
+const { createNotification } = require('./notificationController');
 
 // @route   GET /api/orders
 exports.getOrders = async (req, res) => {
@@ -227,6 +228,13 @@ exports.updateOrderStatus = async (req, res) => {
         body: `Your order status changed to ${status}`,
         data: { orderId: order._id.toString(), type: 'status_update' },
       });
+      createNotification(io, {
+        userId: notifyUserId,
+        type: 'status_update',
+        title: 'Order Update',
+        message: `Your order status changed to ${status}`,
+        orderId: order._id,
+      });
     }
 
     res.json({ success: true, message: 'Status updated', order });
@@ -277,6 +285,13 @@ exports.acceptOrder = async (req, res) => {
       title: 'Order Accepted! 🎉',
       body: `${req.user.name} accepted your ${order.category} request`,
       data: { orderId: order._id.toString(), type: 'order_accepted' },
+    });
+    createNotification(io, {
+      userId: order.userId._id || order.userId,
+      type: 'order_accepted',
+      title: 'Order Accepted! 🎉',
+      message: `${req.user.name} accepted your ${order.category} request`,
+      orderId: order._id,
     });
 
     res.json({ success: true, message: 'Order accepted', order });
