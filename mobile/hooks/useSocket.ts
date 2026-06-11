@@ -1,5 +1,5 @@
-import { useEffect, useRef } from 'react';
-import { getSocket, connectSocket } from '@/lib/socket';
+import { useEffect } from 'react';
+import { getSocket, connectSocket, disconnectSocket } from '@/lib/socket';
 import { useAuthStore } from '@/store/authStore';
 import { useOrderStore } from '@/store/orderStore';
 import { useNotificationStore } from '@/store/notificationStore';
@@ -11,11 +11,12 @@ export function useSocket() {
   const { token, user } = useAuthStore();
   const { addNewOrder, updateOrderInList, addBidToOrder } = useOrderStore();
   const { addNotification, fetchNotifications } = useNotificationStore();
-  const initialized = useRef(false);
 
   useEffect(() => {
-    if (!token || initialized.current) return;
-    initialized.current = true;
+    if (!token) {
+      disconnectSocket();
+      return;
+    }
 
     const socket = connectSocket(token);
 
@@ -75,7 +76,12 @@ export function useSocket() {
     });
 
     return () => {
-      initialized.current = false;
+      socket.off('notification');
+      socket.off('new_order');
+      socket.off('new_bid');
+      socket.off('bid_accepted');
+      socket.off('order_status_update');
+      socket.off('feed_order_removed');
     };
   }, [token, user, addNewOrder, updateOrderInList, addBidToOrder, addNotification, fetchNotifications]);
 
