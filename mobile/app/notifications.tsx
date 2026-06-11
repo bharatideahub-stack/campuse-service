@@ -1,5 +1,5 @@
-import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, SectionList } from 'react-native';
+import React, { useEffect } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, SectionList, ActivityIndicator, RefreshControl } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
@@ -46,11 +46,15 @@ function groupByDate(notifications: Notification[]) {
 
 export default function NotificationsScreen() {
   const router = useRouter();
-  const { notifications, unreadCount, markAllRead, markRead, clearAll } = useNotificationStore();
+  const { notifications, unreadCount, isLoading, fetchNotifications, markAllRead, markRead, clearAll } = useNotificationStore();
   const sections = groupByDate(notifications);
 
+  useEffect(() => {
+    fetchNotifications();
+  }, []);
+
   const handlePress = (item: Notification) => {
-    markRead(item.id);
+    markRead(item._id);
     if (item.orderId) router.push(`/orders/${item.orderId}` as any);
   };
 
@@ -102,7 +106,11 @@ export default function NotificationsScreen() {
         )}
       </View>
 
-      {notifications.length === 0 ? (
+      {isLoading && notifications.length === 0 ? (
+        <View style={styles.empty}>
+          <ActivityIndicator color="#0c8a57" size="large" />
+        </View>
+      ) : notifications.length === 0 ? (
         <View style={styles.empty}>
           <Text style={styles.emptyIcon}>🔔</Text>
           <Text style={styles.emptyTitle}>No notifications</Text>
@@ -111,7 +119,7 @@ export default function NotificationsScreen() {
       ) : (
         <SectionList
           sections={sections}
-          keyExtractor={(item) => item.id}
+          keyExtractor={(item) => item._id}
           renderItem={renderItem}
           renderSectionHeader={({ section }) => (
             <View style={styles.sectionHeader}>
@@ -121,6 +129,9 @@ export default function NotificationsScreen() {
           ItemSeparatorComponent={() => (
             <View style={{ height: 1, backgroundColor: '#d4e8da' }} />
           )}
+          refreshControl={
+            <RefreshControl refreshing={isLoading} onRefresh={fetchNotifications} tintColor="#0c8a57" />
+          }
         />
       )}
     </SafeAreaView>

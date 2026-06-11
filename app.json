@@ -1,3 +1,12 @@
 {
-  "expo": {}
+  "expo": {
+    "extra": {
+      "eas": {
+        "projectId": "709b8934-aa89-43c6-8be7-5ce08312c17d"
+      }
+    },
+    "android": {
+      "package": "com.nagapurpooja.campushub"
+    }
+  }
 }

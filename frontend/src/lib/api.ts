@@ -104,20 +104,14 @@ export const messagesAPI = {
     api.post(`/messages/${orderId}`, data),
 };
 
-// Services (Skill Listings)
-export const servicesAPI = {
-  getAll: (params?: Record<string, string | number>) => api.get('/services', { params }),
-  getMine: () => api.get('/services/mine'),
-  getByUser: (userId: string) => api.get(`/services/user/${userId}`),
-  getById: (id: string) => api.get(`/services/${id}`),
-  create: (data: Record<string, unknown>) => api.post('/services', data),
-  update: (id: string, data: Record<string, unknown>) => api.patch(`/services/${id}`, data),
-  delete: (id: string) => api.delete(`/services/${id}`),
-};
-
-// Public profile
-export const publicProfileAPI = {
-  get: (userId: string) => api.get(`/users/${userId}/public`),
+// Admin
+export const adminAPI = {
+  getStats: () => api.get('/admin/stats'),
+  getHealth: () => api.get('/admin/health'),
+  getTransactions: (params?: Record<string, string | number>) =>
+    api.get('/admin/transactions', { params }),
+  toggleBanUser: (userId: string, ban: boolean) =>
+    api.patch(`/admin/users/${userId}/ban`, { ban }),
 };
 
 export default api;

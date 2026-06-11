@@ -2,6 +2,7 @@ const Bid = require('../models/Bid');
 const Order = require('../models/Order');
 const User = require('../models/User');
 const { sendPushNotification } = require('../services/notificationService');
+const { createNotification } = require('./notificationController');
 
 // @route   POST /api/bids/:orderId
 exports.placeBid = async (req, res) => {
@@ -55,6 +56,13 @@ exports.placeBid = async (req, res) => {
       title: 'New bid received! 💰',
       body: `${req.user.name} bid ₹${price} on your request`,
       data: { orderId: orderId.toString(), type: 'new_bid' },
+    });
+    createNotification(req.app.get('io'), {
+      userId: order.userId,
+      type: 'new_bid',
+      title: 'New bid received! 💰',
+      message: `${req.user.name} bid ₹${price} on your request`,
+      orderId,
     });
 
     res.status(201).json({ success: true, message: 'Bid placed successfully', bid });
@@ -148,6 +156,13 @@ exports.acceptBid = async (req, res) => {
       title: 'Your bid was accepted! 🎉',
       body: `Your bid of ₹${bid.price} was selected`,
       data: { orderId: orderId.toString(), type: 'bid_accepted' },
+    });
+    createNotification(req.app.get('io'), {
+      userId: bid.userId,
+      type: 'bid_accepted',
+      title: 'Your bid was accepted! 🎉',
+      message: `Your bid of ₹${bid.price} was selected`,
+      orderId,
     });
 
     res.json({ success: true, message: 'Bid accepted', order, bid });

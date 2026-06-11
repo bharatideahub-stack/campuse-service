@@ -105,6 +105,14 @@ export const walletAPI = {
   getEarnings: (period?: number) => api.get('/wallet/earnings', { params: { period } }),
 };
 
+// Notifications
+export const notificationsAPI = {
+  get: () => api.get('/notifications'),
+  markRead: (id: string) => api.patch(`/notifications/${id}/read`),
+  markAllRead: () => api.patch('/notifications/read-all'),
+  clearAll: () => api.delete('/notifications'),
+};
+
 // Messages
 export const messagesAPI = {
   get: (orderId: string) => api.get(`/messages/${orderId}`),

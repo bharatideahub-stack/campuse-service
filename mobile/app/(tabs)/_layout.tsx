@@ -3,14 +3,20 @@ import { View, Text, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNotificationStore } from '@/store/notificationStore';
 import { useAuthStore } from '@/store/authStore';
+import { useSocket } from '@/hooks/useSocket';
 
 const TAB_COLOR = '#0c8a57';
 const TAB_INACTIVE = '#73897a';
 const BG = '#ffffff';
 
 export default function TabsLayout() {
+  const { isAuthenticated, _hasHydrated } = useAuthStore();
   const { unreadCount } = useNotificationStore();
-  const { isAuthenticated } = useAuthStore();
+  if (!isAuthenticated) return <Redirect href="/(auth)/login" />;
+
+  useSocket();
+
+  if (!_hasHydrated) return null;
   if (!isAuthenticated) return <Redirect href="/(auth)/login" />;
 
   return (

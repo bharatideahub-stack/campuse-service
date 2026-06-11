@@ -20,10 +20,10 @@ const OWNER_TRANSITIONS: Partial<Record<OrderStatus, { to: OrderStatus; label: s
   DELIVERED: { to: 'COMPLETED', label: 'Confirm Received', icon: <CheckSquare className="w-4 h-4" /> },
 };
 
-const PROVIDER_TRANSITIONS: Partial<Record<OrderStatus, { to: OrderStatus; label: string; icon: React.ReactNode }>> = {
-  ACCEPTED:     { to: 'IN_PROGRESS', label: 'Start Order',     icon: <Play className="w-4 h-4" /> },
-  BID_SELECTED: { to: 'IN_PROGRESS', label: 'Start Order',     icon: <Play className="w-4 h-4" /> },
-  IN_PROGRESS:  { to: 'DELIVERED',   label: 'Mark Delivered',  icon: <CheckSquare className="w-4 h-4" /> },
+const PROVIDER_TRANSITIONS: Partial<Record<OrderStatus, { to: OrderStatus; label: string; icon: React.ReactNode; danger?: boolean }>> = {
+  ACCEPTED: { to: 'IN_PROGRESS', label: 'Start Order', icon: <Play className="w-4 h-4" /> },
+  BID_SELECTED: { to: 'IN_PROGRESS', label: 'Start Order', icon: <Play className="w-4 h-4" /> },
+  IN_PROGRESS: { to: 'DELIVERED', label: 'Mark Delivered', icon: <CheckSquare className="w-4 h-4" /> },
 };
 
 const CANCEL_REASONS = [

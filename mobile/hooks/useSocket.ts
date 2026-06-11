@@ -3,14 +3,14 @@ import { getSocket, connectSocket } from '@/lib/socket';
 import { useAuthStore } from '@/store/authStore';
 import { useOrderStore } from '@/store/orderStore';
 import { useNotificationStore } from '@/store/notificationStore';
-import { Order, Bid, Message } from '@/types';
+import { Order, Bid, Message, Notification } from '@/types';
 import Toast from 'react-native-toast-message';
 import { scheduleLocalNotification } from '@/hooks/usePushNotifications';
 
 export function useSocket() {
   const { token, user } = useAuthStore();
   const { addNewOrder, updateOrderInList, addBidToOrder } = useOrderStore();
-  const { addNotification } = useNotificationStore();
+  const { addNotification, fetchNotifications } = useNotificationStore();
   const initialized = useRef(false);
 
   useEffect(() => {
@@ -19,16 +19,27 @@ export function useSocket() {
 
     const socket = connectSocket(token);
 
-    // New order broadcasted (for providers)
-    socket.on('new_order', ({ order }: { order?: Order }) => {
-      if (!order?._id) return;
-      if (order.userId?._id !== user?._id) {
+    // Fetch persisted notifications on connect
+    fetchNotifications();
+
+    // Backend-persisted notification (new_bid, bid_accepted, order_accepted, status_update)
+    socket.on('notification', (notif: Notification) => {
+      addNotification(notif);
+      Toast.show({ type: 'info', text1: notif.title, text2: notif.message });
+    });
+
+    // New order broadcasted (for providers — local only, not persisted per-user in DB)
+    socket.on('new_order', ({ order }: { order: Order }) => {
+      if (order.userId._id !== user?._id) {
         addNewOrder(order);
         addNotification({
+          _id: `local_${Date.now()}`,
           type: 'new_order',
           title: `New ${order.category} request`,
           message: order.description.slice(0, 80),
           orderId: order._id,
+          read: false,
+          createdAt: new Date().toISOString(),
         });
         Toast.show({
           type: 'info',
@@ -43,74 +54,30 @@ export function useSocket() {
       }
     });
 
-    // New bid placed
-    socket.on('new_bid', ({ bid, orderId }: { bid?: Bid; orderId: string }) => {
-      if (!bid?._id || !orderId) return;
+    // New bid placed — update order in store (toast handled by notification event)
+    socket.on('new_bid', ({ bid, orderId }: { bid: Bid; orderId: string }) => {
       addBidToOrder(orderId, bid);
-      if (bid.userId?._id !== user?._id) {
-        addNotification({
-          type: 'new_bid',
-          title: 'New bid received',
-          message: `${bid.userId.name} bid ₹${bid.price}`,
-          orderId,
-        });
-        Toast.show({
-          type: 'info',
-          text1: '💰 New Bid',
-          text2: `₹${bid.price} from ${bid.userId.name}`,
-        });
-        scheduleLocalNotification(
-          'New bid received',
-          `${bid.userId.name} bid ₹${bid.price}`,
-          { orderId }
-        );
-      }
     });
 
-    // Bid accepted
-    socket.on('bid_accepted', ({ bid, order }: { bid?: Bid; order?: Order }) => {
-      if (!order?._id || !bid?._id) return;
+    // Bid accepted — update order in store (toast handled by notification event)
+    socket.on('bid_accepted', ({ order }: { bid: Bid; order: Order }) => {
       updateOrderInList(order);
-      if (bid.userId?._id === user?._id) {
-        addNotification({
-          type: 'bid_accepted',
-          title: 'Your bid was accepted! 🎉',
-          message: `Your bid of ₹${bid.price} was selected`,
-          orderId: order._id,
-        });
-        Toast.show({
-          type: 'success',
-          text1: '🎉 Bid Accepted!',
-          text2: `Your bid of ₹${bid.price} was selected`,
-        });
-        scheduleLocalNotification(
-          'Your bid was accepted! 🎉',
-          `Your bid of ₹${bid.price} was selected`,
-          { orderId: order._id }
-        );
-      }
     });
 
-    // Order status update
-    socket.on('order_status_update', ({ order }: { order?: Order }) => {
-      if (!order?._id) return;
+    // Order status update — update order in store (toast handled by notification event)
+    socket.on('order_status_update', ({ order }: { order: Order }) => {
       updateOrderInList(order);
-      const isInvolved =
-        order.userId?._id === user?._id || order.assignedTo?._id === user?._id;
-      if (isInvolved) {
-        addNotification({
-          type: 'status_update',
-          title: 'Order Updated',
-          message: `Status changed to ${order.status}`,
-          orderId: order._id,
-        });
-      }
+    });
+
+    // Remove cancelled/accepted orders from feed
+    socket.on('feed_order_removed', ({ orderId }: { orderId: string }) => {
+      updateOrderInList({ _id: orderId } as Order);
     });
 
     return () => {
       initialized.current = false;
     };
-  }, [token, user, addNewOrder, updateOrderInList, addBidToOrder, addNotification]);
+  }, [token, user, addNewOrder, updateOrderInList, addBidToOrder, addNotification, fetchNotifications]);
 
   return getSocket();
 }

@@ -27,6 +27,7 @@ export interface User {
   role: 'student' | 'admin';
   isVerified?: boolean;
   isAvailable: boolean;
+  isBanned?: boolean;
   rating: number;
   totalRatings: number;
   completedOrders: number;
@@ -103,7 +104,7 @@ export interface WalletTransaction {
 }
 
 export interface Notification {
-  id: string;
+  _id: string;
   type: 'new_order' | 'new_bid' | 'order_accepted' | 'bid_accepted' | 'status_update' | 'new_message';
   title: string;
   message: string;

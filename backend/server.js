@@ -9,6 +9,7 @@ const { Server } = require('socket.io');
 const connectDB = require('./src/config/db');
 const { initializeSocket } = require('./src/socket/socketHandler');
 const rateLimiter = require('./src/middleware/rateLimiter');
+const { incrementRequestCount } = require('./src/controllers/adminController');
 const { startOrderExpiryScheduler } = require('./src/services/orderExpiryScheduler');
 
 const authRoutes = require('./src/routes/auth');
@@ -18,7 +19,9 @@ const userRoutes = require('./src/routes/users');
 const reviewRoutes = require('./src/routes/reviews');
 const walletRoutes = require('./src/routes/wallet');
 const messageRoutes = require('./src/routes/messages');
+const adminRoutes = require('./src/routes/admin');
 const serviceRoutes = require('./src/routes/services');
+const notificationRoutes = require('./src/routes/notifications');
 
 const app = express();
 const server = http.createServer(app);
@@ -68,6 +71,9 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 // Rate limiting
 app.use('/api/', rateLimiter);
 
+// HTTP request counter (for admin health panel)
+app.use('/api/', (req, res, next) => { incrementRequestCount(); next(); });
+
 // Make io accessible in routes
 app.set('io', io);
 
@@ -79,7 +85,9 @@ app.use('/api/users', userRoutes);
 app.use('/api/reviews', reviewRoutes);
 app.use('/api/wallet', walletRoutes);
 app.use('/api/messages', messageRoutes);
+app.use('/api/admin', adminRoutes);
 app.use('/api/services', serviceRoutes);
+app.use('/api/notifications', notificationRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {

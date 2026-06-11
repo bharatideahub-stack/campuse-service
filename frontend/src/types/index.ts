@@ -32,6 +32,7 @@ export interface User {
   phone?: string;
   role: 'student' | 'admin';
   isAvailable: boolean;
+  isBanned?: boolean;
   rating: number;
   totalRatings: number;
   completedOrders: number;

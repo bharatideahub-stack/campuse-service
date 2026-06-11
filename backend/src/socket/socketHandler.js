@@ -86,4 +86,22 @@ const emitToUser = (io, userId, event, data) => {
   io.to(`user_${userId}`).emit(event, data);
 };
 
-module.exports = { initializeSocket, connectedUsers, emitToUser };
+// Utility: Get list of online user IDs (for admin dashboard)
+const getOnlineUserIds = () => {
+  return Array.from(connectedUsers.keys());
+};
+
+// Utility: Force-disconnect a specific user (e.g. after banning)
+const disconnectUser = (io, userId) => {
+  const socketId = connectedUsers.get(userId);
+  if (socketId) {
+    const socket = io.sockets.sockets.get(socketId);
+    if (socket) {
+      socket.emit('force_disconnect', { reason: 'Account has been suspended' });
+      socket.disconnect(true);
+    }
+    connectedUsers.delete(userId);
+  }
+};
+
+module.exports = { initializeSocket, connectedUsers, emitToUser, getOnlineUserIds, disconnectUser };
