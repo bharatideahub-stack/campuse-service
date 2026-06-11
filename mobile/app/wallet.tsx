@@ -6,11 +6,8 @@ import {
   ScrollView,
   TouchableOpacity,
   TextInput,
-<<<<<<< HEAD
   FlatList,
   Platform,
-=======
->>>>>>> origin/main
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import * as Linking from 'expo-linking';

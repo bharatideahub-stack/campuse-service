@@ -22,12 +22,8 @@ import { Avatar } from '@/components/ui/Avatar';
 import { ChatListSkeleton } from '@/components/ui/Skeleton';
 import { getSocket, joinOrderRoom, leaveOrderRoom, emitTypingStart, emitTypingStop } from '@/lib/socket';
 
-<<<<<<< HEAD
-type View = 'list' | 'thread';
-const CHAT_ACTIVE_STATUSES = ['ACCEPTED', 'BID_SELECTED', 'IN_PROGRESS', 'DELIVERED'];
-=======
 type ChatView = 'list' | 'thread';
->>>>>>> origin/main
+const CHAT_ACTIVE_STATUSES = ['ACCEPTED', 'BID_SELECTED', 'IN_PROGRESS', 'DELIVERED'];
 
 export default function ChatScreen() {
   const { user } = useAuthStore();
